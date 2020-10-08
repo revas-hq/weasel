@@ -56,8 +56,10 @@ func main() {
 	var client *storage.Client
 	{
 		if len(GCloudCredentials) == 0 {
+			_ = logger.Log("info", "using Google Cloud standard credentials")
 			client, err = storage.NewClient(ctx)
 		} else {
+			_ = logger.Log("info", "using Google Cloud environment credentials")
 			client, err = storage.NewClient(ctx, option.WithCredentialsJSON(GCloudCredentials))
 		}
 		if err != nil {
