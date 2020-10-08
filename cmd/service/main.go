@@ -55,7 +55,8 @@ func main() {
 
 	var client *storage.Client
 	{
-		if len(GCloudCredentials) == 0 {
+		useAppEngine := true
+		if len(GCloudCredentials) == 0 || useAppEngine {
 			_ = logger.Log("info", "using Google Cloud standard credentials")
 			client, err = storage.NewClient(ctx)
 		} else {
