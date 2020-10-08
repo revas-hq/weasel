@@ -1,0 +1,55 @@
+version: 2.1
+
+orbs:
+  gcp-cli: circleci/gcp-cli@1.8
+
+jobs:
+  build:
+    docker:
+      - image: cimg/go:1.13
+    steps:
+      - checkout
+      - run: go build ./cmd/service/main.go
+  test:
+    docker:
+      - image: cimg/go:1.13
+    steps:
+      - checkout
+      - run: go test -cover ./pkg/...
+  lint:
+    docker:
+      - image: cimg/go:1.13
+    steps:
+      - checkout
+      - run: curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s v1.27.0
+      - run: golangci-lint run
+  deploy:
+    executor: gcp-cli/default
+    steps:
+      - checkout
+      - run: curl -L https://github.com/a8m/envsubst/releases/download/v1.1.0/envsubst-`uname -s`-`uname -m` -o envsubst
+      - run: chmod +x envsubst
+      - run: ./envsubst < app.template.yaml > app.yaml
+      - gcp-cli/install
+      - gcp-cli/initialize
+      - run: $SUDO gcloud app deploy --quiet
+
+workflows:
+  ci:
+    jobs:
+      - build:
+          name: service:build
+      - lint:
+          name: service:lint
+      - test:
+          name: service:test:unit
+      - deploy:
+          context: static-production
+          name: service:deploy:prod
+          requires:
+            - service:build
+            - service:lint
+            - service:test:unit
+          filters:
+            branches:
+              only: master

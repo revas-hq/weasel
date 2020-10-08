@@ -1,0 +1,13 @@
+runtime: go113
+
+main: ./cmd/service
+
+handlers:
+  - url: /.*
+    script: auto
+    secure: always
+
+env_variables:
+  REVAS_WEASEL_GCLOUD_CREDENTIALS: ${REVAS_WEASEL_GCLOUD_CREDENTIALS}
+  REVAS_WEASEL_GCLOUD_BUCKET: ${REVAS_WEASEL_GCLOUD_BUCKET}
+  
